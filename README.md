@@ -1,15 +1,6 @@
 # Julia-Tutorial-SPMLJ
-Suivi du tutoriel Julia SPMLJ : https://sylvaticus.github.io/SPMLJ/stable/index.html#Introduction-to-Scientific-Programming-and-Machine-Learning-with-Julia
-
-A GitHub-based, collaborative introductory course on common scientific-related and machine learning tasks using the Julia programming language.
-With videos, code and exercises.
-
-This is the repository of the course with the source code of the pages that appear in the videos.
-Get and run the code by yourself with `git clone https://github.com/sylvaticus/SPMLJ.git` (pages source code is in the `lessonSource` folder) or click the link below to access the course.
-
-
-[Access the course](https://sylvaticus.github.io/SPMLJ/stable) - [Contribution guidelines](https://sylvaticus.github.io/SPMLJ/stable/00_-_INTRO_-_Introduction_julia_ml/0001_-_Course_presentation.html#How-to-contribute-to-the-course)
-
+Dossier de suivi du MOOC SPMLJ, un cours introductif collaboratif sur les tâches courantes liées aux sciences et à l'apprentissage automatique à l'aide du langage de programmation Julia, accompagné de vidéos, de code et d'exercices.
+Vous pouvez accéder au cours sur le lien suivant: (https://sylvaticus.github.io/SPMLJ/stable)
 
 ![logos](lessonsSources/assets/imgs/beta_and_tutelles_white.png)
 
