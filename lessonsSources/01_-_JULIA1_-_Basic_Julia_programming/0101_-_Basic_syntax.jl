@@ -18,13 +18,14 @@ using Pkg
 Pkg.activate(".")   
 ENV["PYTHON"] = ""  # This will be needed in a further segment  
 ENV["R_HOME"] = "*" # This wil lbe needed in a further segment
-## If using a Julia version different than 1.8 please uncomment and run the following line (reproductibility guarantee will hower be lost)
-## Pkg.resolve()   
+## If using a Julia version different than 1.8 please uncomment and run the following line (reproductibility guarantee will however be lost)
+Pkg.resolve()   
 Pkg.instantiate()
 using Random
+using Statistics
 Random.seed!(123)
 
-
+rand()
 # ## Comments
 
 # Similar to many other languages, everything that folows a hash symbol (`#`), up to the end of the line, is considered by Julia as a comment.
@@ -48,9 +49,12 @@ a = 1
 a = 1;
 
 # All code blocks (like the foor loop that we'll study in detail in the [Control flow and functions](@ref control_flow) segment) ends with the `end` keyword, like in the example below:
+test = 0
 for i in 1:3
+   test = i
    println("i is $i")
 end # Keyword `end` to finish a block
+test
 
 # Function calls require to specify the name of the funtion to call followed straigth away (without spaces) with the function arguments inside round brackets:
 println("Hello world!")
@@ -63,15 +67,21 @@ println("Hello world!")
 using Statistics # for the `mean` function, in the Standard Library
 σ²(x) = sum( (x .- mean(x)).^2 )/length(x) # The superscript `²` is just another character, it has no syntactic value.
 σ²([1,2,3])
+[1,2,3] .- mean([1,2,3])
 x̄ₙ = 10
 vàlidVarNαme! = 2
 🥞 = 8
 🍴(🥫,parts=4) = 🥫/parts
 🍰 = 🍴(🥞)
 
+# \sigma ²
+σ² = 0
+
+
 # ## Broadcasting
 
 # _Broadcasting_ refers to the capacity to dispatch a function that accepts a scalar argument to a whole collection. Broadcasting will then call the function with each individual element of the collection.
+# <=> map in other languages
 # It is implemented by postfixing a function name (or prefixing an operator) with a single dot at call time:
 
 10 .+ [1,2,3] 
@@ -84,9 +94,9 @@ add2.(Set([1,2,3,2])) # and here a Set
 .+([1,2,3],[10,20,30]) # fine here
 ## .+([1,2,3],[10,20]) # DimensionMismatch error: the input of the the broadcasted arguments must have the same size or be a scalar
 # To "protect" one specific argument to be broadcasted, use `Ref(arg)`:
-foo(x,y::AbstractArray) = [yi+x for yi in y] # a function that wants the first arguent as scalar and the second as vector
+foo(x,y::AbstractArray) = [yi+x for yi in y] # a function that wants the first argument as scalar and the second as vector
 foo(1,[10,20])
-## foo.([1,2],[10,20])  # error, as we try to broadcast also the seond element, but we can't call `foo` with two integers
+#foo.([1,2],[10,20])  # error, as we try to broadcast also the second element, but we can't call `foo` with two integers
 foo.([1,2],Ref([10,20])) # now it is fine, we broadcast only the first argument
 
 
@@ -106,23 +116,26 @@ collect(1:3) # in ranges, both extremes are included
 # All standard mathematical arithmetic operators (`+`,`-`,`*`,`/`) are supported in the obvious way:
 
 a = 2^4         # rise to power
-b = ℯ^2; #= or =# b = exp(2) # Exponential with base ℯ 
+b = ℯ^2; #= or =# b = exp(2) # Exponential with base ℯ (\euler) 
 d = log(7.3890) # base ℯ
 e = log(10,100) # custom base
-f = 5 ÷ 2       # integer division
+f = 5 ÷ 2       # integer division (\div)
+f = div(5,2)
 e = 5 % 2       # reminder (modulo operator)
-a = 2//3 + 1//3     # rational numbers
+a = 2//3 + 1//6     # rational numbers
 typeof(a)
-π == pi         # some irrational constants
+π == pi         # some irrational constants (\pi)
 typeof(ℯ)
-convert(Float64,a)
+convert(Float64,a) # convert rationnal to float
+pi
+ℯ
 
 # ## Quotation
 
 a = 'k'              # single quotation mark: a single Char
 b = "k"              # double quotation mark: a (Unicode) String
 #c = 'hello'         # error !
-c = "hello"
+c = "hello\nworld"
 d = `echo hello`     # backtick: define a command to (later) run (e.g. on the OS)
 e = """a
 multiline
@@ -134,7 +147,7 @@ f = md"""a
 **markdown**
 _string_"""
 
-
+typeof(f)
 # ## Missingness implementations
 
 # Attention to these three different implementations (of 3 different concepts) of "missingness":
@@ -146,7 +159,7 @@ typeof(a)
 typeof(b)
 typeof(c)
 d = 0/0
-## a2 = mean([1,a,3]) # would error
+# a2 = mean([1,a,3]) # would error
 b2 = mean([1,b,3])
 c2 = mean([1,c,3])
 b3 = mean(skipmissing([1,b,3]))
@@ -169,7 +182,7 @@ using Distributions
 rand(Exponential(10)) # We'll see Distributions more in detail in the Scientific Programming lesson
 rand(30:40,3) # A vector of 3 random numbers.
 rand(Exponential(10),3,4) # Same syntax for sampling from any distribution ! 
-using Random
+using Random # already done at the begining
 myRNG = MersenneTwister(123) # use StableRNG for a RNG guaranteed to remain stable between Julia-versions
 a1 = rand(myRNG,10:1000,5)
 a2 = rand(myRNG,10:1000,5)
@@ -183,3 +196,5 @@ a2 == b2
 
 a = rand(myRNG,Exponential(10),5)
 
+a = 2
+println(a²)
