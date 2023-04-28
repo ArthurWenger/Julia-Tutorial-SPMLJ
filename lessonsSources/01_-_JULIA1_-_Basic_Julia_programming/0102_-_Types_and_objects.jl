@@ -81,7 +81,7 @@ typeof(+) <: Function
 1 + 2
 +(1,2) # this call the function "+"
 import Base.+
-## +(a,b,c) = a*b*c  # Defining my new crazy addition operation with 3 arguments
+# +(a,b,c) = a*b*c  # Defining my new crazy addition operation with 3 arguments
 10+20+30            # This call it
 10+20               # The addition with two parameters remains the same
 10+20+30+40         # Also this one remains with the standard addition..
@@ -97,9 +97,15 @@ typeof(k)
 sizeof(k)  # bytes (1 byte is 8 bits)
 bitstring(k)
 0*2^0+1*2^1+0*2^2+1*2^3
-m = k      # name binding: it binds (assign) the entity (object) referenced by a to the b identifier (the variable name)
+m = k      # !!! name binding: it binds (assign) the entity (object) referenced by a to the b identifier (the variable name)
 m == k     # are the two objects equal ?
 m === k    # are the two identifiers binding the same identical object in memory ?
+
+k = [1,2,3]
+m = k
+k[1] = 55
+print(m===k)
+
 
 
 # ## Mutability property of Julia objects
@@ -114,12 +120,12 @@ ismutable(p)
 ismutable(g)
 ## mutable objects are stored in memory "directly", while for mutable objects it is its memory address to be stored
 
-
 # ## Three different ways to "copy" objects...
 
 a = [[[1,2],3],4] # First element of a is said to be "mutable", second one is not:
 ismutable(a[1])
 ismutable(a[2])
+ismutable(a[1][2])
 b = a            # binding to a new identifier
 c = copy(a)      # create a new copy of a and binds it to c
 d = deepcopy(a)  # copy all the references recursively and assign this new object to d
