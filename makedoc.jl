@@ -303,7 +303,7 @@ cp(LESSONS_ROOTDIR_TMP, LESSONS_ROOTDIR; force=true)
 
 println("Starting deploying the documentation...")
 deploydocs(
-    repo = "github.com/sylvaticus/SPMLJ.git",
+    repo = "github.com/ArthurWenger/Julia-Tutorial-SPMLJ",
     devbranch = "main",
     target = "buildedDoc"
 )
