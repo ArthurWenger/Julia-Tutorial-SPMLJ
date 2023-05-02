@@ -41,18 +41,21 @@ ismutable(a) # long story.... https://github.com/JuliaLang/julia/issues/30210
 length(a)
 findfirst(isequal('o'), a)
 findnext(isequal('o'), a, 6)
+test = findnext(isequal('o'), a, 9)
+print(test)
+typeof(test)
 occursin("world",a)
 occursin(lowercase("world"),lowercase(a))
 using Unicode
-occursin(Unicode.normalize("world", casefold=true),Unicode.normalize(a, casefold=true)) 
+occursin(Unicode.normalize("world", casefold=true),Unicode.normalize(a, casefold=true)) # for special cases, special symbols, greek letters, chinese letters...
 endswith(a,"ld ")
 startswith(a,"Mooo")
-occursin(r"H*.d ", a)
+occursin(r"H*.d ", a) # regex pattern
 
 ## modifications..
 lowercase(a)
 lowercasefirst(a)
-split(a, " ")
+split(a, " ") # split by " " is by default
 replace(a,"World" => "Universe")
 strip(a)
 
@@ -71,7 +74,7 @@ b = string(2019)
 #     Attention not to confuse the `string` function with the `String` type and the `String()` constructor!
 
 ## to know more...
-methodswith(String,supertypes=true); # where any argument is a String or any parent type (such e.g. AbstractString)
+methodswith(String,supertypes=true) # where any argument is a String or any parent type (such e.g. AbstractString)
 ## See also https://docs.julialang.org/en/v1/manual/strings/
 
 # ## Arrays - `Array{T,N}`
@@ -87,12 +90,13 @@ methodswith(String,supertypes=true); # where any argument is a String or any par
 # A row vector is necessarily instead a single row of a 2 dimensions array.
 
 a = [1,2,3]
-b = [1 ; 2 ; 3 ;;] # This syntax requires Julia >= 1.7
+b = [1 ; 2 ; 3 ;;] # This syntax requires Julia >= 1.7 (;; creates a Matrix)
 a == b
 
 # #### Initialisation
 a = [1,2,3]; #= or =# a = [1;2;3] 
-a = [1; 6:-2:2; 10] # notes: (a) the semicolon, (b) the range includes BOTH the extremes
+a = [1; 6:-2:2; 10] # create a vector starting with 1, followed by a vector with a range from 6 to 2 with a step of -2 (so [6, 4, 2]) and ending with 10 
+# notes: (a) the semicolon to concat vectors, (b) the range that includes BOTH the extremes
 a = [[1,2],[3,4]]   # nested vectors. Each elements can have a different lenght, but rules of linear algebra doesn't apply
 # !!! danger
 #     Don't confuse nested vectors with multi-dimensional arrays!
@@ -105,27 +109,27 @@ b = [1,"pizza","beer"]
 a = Array{Int64,1}()
 # !!! warning
 #     Watch out for the difference between `a = Array{Int64,1}()` and `a = Array{Int64,1}`
-a = Vector{Int64}()
+a = Vector{Int64}() 
 # n-elements initialisation:
+# much more optimised than adding to an empty array because it preallocates memory
 n = 3
 T = Int64
 zeros(n)            # zeros (Float64)
 zeros(T,n)          # zeros (casted as type T)
 ones(n)             # ones  (Float64)
 ones(T,n)           # ones  (casted of type T)
-Array{T,1}(undef,n) # garbage
+Array{T,1}(undef,n) # array with one dimension, of n elements, with elements of type Int64 and init with garbage value (memory values) until assigned
 fill(2,3)
 
 # #### Accessing Vectors
 a = [10,20,30,40,50,60,70,80,90] 
 a[1]
 a[end]
-a[[1; 6:-2:2; 8]] # indicised by a vector of positions 
-
+a[[1; 6:-2:2; 8]] # access elements with a vector of positions (ie elements at position 1, 6, 4, 2 and 8)
 
 # #### Collecting iterators into vectors
-aRange = 3:2:7
-a = collect(aRange)
+aRange = 3:2:7 # this is an iterator
+a = collect(aRange) # create the vector with the iterator
 a = [3:2:7;] # alternative
 typeof(aRange)
 typeof(aRange) <: AbstractArray # Everywhere an AbstractArray is expected, you can provide a range instead
@@ -135,7 +139,7 @@ a = [1,2,3]
 reverse(a), a[end:-1:1] # Other way to revert an array
 vcat([1,2,3],[4,5],6)
 
-push!(a,4)  # add as individual elements
+push!(a,11)  # add as individual elements
 append!(a,5) # add as many new elements 
 
 # !!! tip "Functions with exclamation marks"
@@ -147,16 +151,19 @@ append!([1,2,3,4,5],[6,7])
 pop!(a)
 a
 popfirst!(a)
+a
 deleteat!(a,2)
+a
 pushfirst!([2,3],1)
 a = [2,1,3,1]
-sort(a)   # also `sort!(a)``
-unique(a) # also `unique!(a)`
+sort!(a)   # also `sort!(a)``
+unique!(a) # also `unique!(a)`
 in(1,a)   # also available as operator: `if 2 in a [...] end`
 length(a) # number of elements contained in all the dimensions
-size(a),size(a,1) # number of elements by dimension
+size(a),size(a,1) # number of elements by dimension, since a has only one dimension length(a) is the same as size(a,1)
 minimum(a)
 min(a...)
+print(a...)
 # !!! tip "..."
 #     "..." is called the *splat operator* and it is used to convert the elements in a vector into a tuple of separate elements in a function call, like the example above
 min(4,7,3)
@@ -170,8 +177,8 @@ shuffle([1,2,3]) # also shuffle!([1,2,3])
 isempty(a)
 findall(x -> x == 1, [2,1,3,1]) # anonymous function returning an array of bools, findall then return the indexes
 findfirst(x -> x == 1, [2,1,3,1])
-myComparitionWith1(i) = i==1
-findall(x -> myComparitionWith1(x), [2,1,3,1])
+myComparisonToOne(i) = i==1
+findall(x -> myComparisonToOne(x), [2,1,3,1])
 filter(i -> i > 2, [1,2,3,4])
 
 
@@ -179,12 +186,13 @@ filter(i -> i > 2, [1,2,3,4])
 data     = [1:10;]
 toDelete = [7,5,2]
 deleteat!(data, findall(x -> x in toDelete, data))
+length(data)
 
 for (i,value) in enumerate([10,20,30]) # iterator that returns an index/element tuple
     println("$i - $value")
 end
 
-names = ["Marc", "Anne"]
+names = ["Marc", "Anne", "Antoine"]
 sex   = ['M','F']
 age   = [25,20]
 
@@ -196,6 +204,7 @@ end
 
 # #### Initialisation
 a = [[1,2,3] [4,5,6]] # By column, i.e. elements of the first column, elements of the second column, ...
+# !!! Warning a = [[1,2,3],[4,5,6]] is not a Matrix an not the same as the previous line
 a = [1 4; 2 5; 3 6]   # By row, i.e. elements of the first row, elements of the second row, ... 
 
 ## Empty (zero-elements) arrays:
@@ -217,6 +226,7 @@ a[2,1]   # comma to separate the dimensions
 #     Don't confuse `a[i,j]` for selecting an element of a Matrix with `a[i][j]` to select the inner component of a nested array
 a[1,2:3]   # with a range on the second dimension
 a[[1,3],1] # with a vector of positions in the first dimension
+a[1:2,1] # with a vector of positions in the first dimension
 a[2,:]     # with a full range (all values) in the second dimension, i.e. all columns value for row 2
 # !!! warning
 #     Note that when the data as only one element on a given dimension, julia reduces the dimensions automatically: the result of `a[2,:]` is NOT a row vector (that is a one-row matrix) but a one dimensional array
@@ -225,6 +235,10 @@ b = [true false true false; true true true false; true false true false]
 a[b] # always flatted array returned (need eventually reshaping, see later)
 
 # #### Funcionality related to dimensions
+test = [1,2,3,4,5]
+size(test,1)
+length(test)
+ndims(test)
 
 size(a)              # returns a tuple (i.e. an immutable list) with the sizes of the n dimensions
 ndims(a)             # return the number of dimensions of the array (e.g. `2` for a matrix)
@@ -249,14 +263,23 @@ selectdim(a,1,3) # Select an hyperplane on dimension 1 (rows) at position 3. Ret
 a = [1 2; 3 4]
 vec(a)        # shadow copy (different view of the underlying data)
 reshape(a,4)  # shadow copy
-a[:]          # allocate, as all slice operations do
+a[:]          # allocate, as all slice operations do (ie all modifications tu this view affects the original matrix)
+test = a[:]
+test[1] = 20
+test
+a
+
+a = [1 2 3; 4 5 6; 7 8 9]
+v = vec(a)  # crée une vue du même espace mémoire
+v[2] = 0  # modifie la deuxième valeur de v
+println(a)  # affiche la matrice modifiée
 
 # #### Other functionality related to Arrays
-vcat([1 2; 3 4], [5 6; 7 8]) # works also for DataFrames
-hcat([1,2,3],[4,5,6])        # works also for DataFrames
+vcat([1 2; 3 4], [5 6; 7 8]) # concatenate along rows, works also for DataFrames
+hcat([1,2,3],[4,5,6])        # concatenate along cols, works also for DataFrames
 a = [1 2; 3 4]
 b = similar(a) # garbage inside
-cat(a,a,a,dims=3)
+cat(a,a,a,dims=3) # concatenate along specified dim
 
 # Sort by column (field)
 a = [[3,2,1] [20,30,20] [1000,3000,2000] [300,100,200]]
