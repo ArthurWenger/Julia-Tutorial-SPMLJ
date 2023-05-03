@@ -403,7 +403,6 @@ v == v2 == v3 == v4
 # !!! warning
 #     Note that order is not preserved. For insertion-order preservation see `OrderedDict` and for sorted dictionaries see `SortedDict`, both from the [DataStructures.jl](https://github.com/JuliaCollections/DataStructures.jl) package.
 
-
 # ### Initialisation
 
 mydict = Dict(); #= or better =#  mydict = Dict{String,Int64}()
@@ -412,14 +411,14 @@ mydict = Dict('a'=>1, 'b'=>2, 'c'=>3)
 # ### Indexing
 mydict['a']
 #mydict['d']     # error!
-get(mydict,'d',0) # specific a default if key not found
+get(mydict,'d',-1) # specify a default if key not found
 
 # ### Adding/deleting/checking
 mydict['d'] = 4
 
 delete!(mydict,'d')
-haskey(mydict, 'a')
-in(('a' => 1), mydict)
+haskey(mydict, 'a') # Determine whether a collection has a mapping for a given key
+in(('a' => 1), mydict) # checks whether its argument is in collection
 typeof('a' => 1)
 
 # ### Conversion
@@ -427,20 +426,24 @@ typeof('a' => 1)
 map((i,j) -> mydict[i]=j, ['e','f','g'], [4,5,6])
 mydict
 k = [:a,:b,:c]
-v = [1,2,3]
+v = [7,8,9]
 mydict = Dict([k=>v for (k,v) in zip(k,v)])
 # Dictionary -> Arrays
 collect(keys(mydict)) # keys or values alore return an iterator
 collect(values(mydict)) 
+values(mydict) # ValueIterator
 
 # ### Iteration
 for (k,v) in mydict
    println("$k is $v")
 end
 
+for v in values(mydict)
+    println("$v")
+end
 # ## Sets - `Set{T}`
 s = Set(); #= or better =# Set{Int64}()
-s = Set([1,2,3,4]) # Only a single `2` will be stored
+s = Set([1,2,3,4,2]) # Only a single `2` will be stored
 s
 push!(s,5)
 delete!(s,1)
