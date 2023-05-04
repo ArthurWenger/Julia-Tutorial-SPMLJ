@@ -432,6 +432,7 @@ mydict = Dict([k=>v for (k,v) in zip(k,v)])
 collect(keys(mydict)) # keys or values alore return an iterator
 collect(values(mydict)) 
 values(mydict) # ValueIterator
+mydict[:d] = 4
 
 # ### Iteration
 for (k,v) in mydict
@@ -528,9 +529,9 @@ second(christmasLunch)
 
 
 # ### Periods and datetime arithmetics
-hollidayPeriod = newYearDay - christmasDay  # between dates is in days
+hollidayPeriod = newYearDay - christmasDay  # dates difference is in days
 longPeriod = Date(2035,6,1) - christmasDay
-mealPeriod = DateTime(2030,12,31,23,30) - newYearEvenDinner # between datetime is in milliseconds
+mealPeriod = DateTime(2030,12,31,23,30) - newYearEvenDinner # datetime difference is in milliseconds
 #newYearDay - newYearEvenDinner # error! no mixed
 convert(DateTime,newYearDay)
 convert(Date,newYearEvenDinner) # possible information loss
