@@ -13,7 +13,15 @@
 
 # 1) Start by setting the working directory to the directory of this file and activate it. If you have the `Manifest.toml` file in the directory, just run `Pkg.instantiate()`, otherwise manually add the packages JuMP, GLPK, DataFrames, CSV, Pipe, HTTP.
 
+cd(@__DIR__)         
+using Pkg, Random
+Pkg.activate(".")   
+Pkg.instantiate() 
+Random.seed!(123)
+
 # 2) Load the packages DelimitedFiles, JuMP, GLPK, DataFrames, CSV, Pipe, HTTP
+
+using CSV, Pipe, HTTP, JuMP, GLPK, DataFrames, DelimitedFiles
 
 # 3) Load from internet or from local files the following data:
 
@@ -29,33 +37,69 @@ urlCoefficients = "https://raw.githubusercontent.com/sylvaticus/IntroSPMLJuliaCo
 # For example to download from internet and import the matrix you can use something like:
 coef  = @pipe HTTP.get(urlCoefficients).body |> readdlm(_,';')
 
+activities = @pipe HTTP.get(urlActivities).body |> CSV.File(_) |> DataFrame
+resources  = @pipe HTTP.get(urlResources).body |> CSV.File(_) |> DataFrame
+
 # 4) Determine `nA` and `nR` as the number of activities and the number of resources (use the `size` function)
 
+(nA, nR) = (size(activities,1), size(resources,1)) 
 
 # ### Optimisation model definition
 
 # 5) Define `profitModel` as a model to be optimised using the `GLPK.Optimizer`
+
+profitModel = Model(GLPK.Optimizer)
+
 # 6) [OPTIONAL] set `GLPK.GLP_MSG_ALL` as the `msg_lev` of GLPK
+
+set_optimizer_attribute(profitModel, "msg_lev", GLPK.GLP_MSG_ALL)
 
 # ### Model's endogenous variables definition
 
 # 7) Define the non-negative model `x` variable, indexed by the positions between 1 and `nA` (i.e. `x[1:nA] >= 0`) (you could use the @variables macro). Don't set the `x` variable to be integer at this step, as some variables are continuous, just set them to be non-negative.
 
+@variables profitModel begin
+    x[1:nA] >= 0
+end
+
 # 8) Set the variables for which the corresponding `integer` column in the `activity` dataframe is equal to 1 as a integer variable.
 # To set the specific vaciable `x[i]` as integer use  `set_integer(x[i])`
+
+for i in 1:nA
+    if activities.integer[i] == 1
+        set_integer(x[i])
+    end
+end
 
 # ### Model's constraint definition
 
 # 9) Define the `resLimit[r in 1:nR]` family of contraints, such that when you sum `coef[r,a]*x[a]` for all the `1:nA` activities you must have a value not greater than `resources.initial[r]`
 
+@constraints profitModel begin
+    resLimit[r in 1:nR], # observe resources limits
+        sum(coef[r,a]*x[a] for a in 1:nA) <= resources.initial2[r]
+end
+
 # ### Objective definition
 
 # 10) Define the objective as the maximisation of the profit given by summing for each of the `1:nA` activities `activities.gm[a] * x[a]`
 
+@objective profitModel Max begin
+    sum(activities.gm[a] * x[a] for a in 1:nA)
+end
+
 # ### Model resolution
 # 11) [OPTIONAL] Print the model to check it
+
+print(profitModel)
+
 # 12) Optimize the model
+
+optimize!(profitModel)
+
 # 13) Check with the function `status = termination_status(profitModel)` that the status is `OPTIMAL` (it should be!)
+
+status = termination_status(profitModel)
 
 # ### Print optimal level of activities
 

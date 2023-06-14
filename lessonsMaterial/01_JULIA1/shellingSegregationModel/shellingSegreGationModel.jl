@@ -17,11 +17,11 @@
 
 # ------------------------------------------------------------------------------
 # ## 1) Setting the environment...
-cd(@__DIR__)         
-using Pkg             
-Pkg.activate(".")   
+cd(@__DIR__)
+using Pkg
+Pkg.activate(".")
 # If using a Julia version different than 1.7 please uncomment and run the following line (reproductibility guarantee will hower be lost)
-# Pkg.resolve()   
+#Pkg.resolve()   
 Pkg.instantiate()
 using Random
 Random.seed!(123)
@@ -34,7 +34,7 @@ mutable struct Agent
 end
 mutable struct Env
     nR::Int64                       # number of rows
-    nC::Int64                       # number of columns
+    nC::Int64                       # number of columnsiDToXYconvert
     similarityThreeshold::Float64   # threeshold for agents to be "happy" with their location
     neighborhood::Int64             # how far looking for "similar" agents
     nSteps::Int64                   # number of iteractive steps to employ
@@ -45,9 +45,9 @@ end
 
 # ------------------------------------------------------------------------------
 # ## 3) Defining some utility functions... 
-xyToId(x,y,nR,nC) =  nR*(x-1)+y
-iDToXY(id,nR,nC)  =  Int(floor((id-1)/nR)+1), (id-1)%(nR)+1
-printableGrid(env) = reshape([a.gid for a in env.cells],env.nR,env.nC)
+xyToId(x, y, nR, nC) = nR * (x - 1) + y
+iDToXY(id, nR, nC) = Int(floor((id - 1) / nR) + 1), (id - 1) % (nR) + 1
+printableGrid(env) = reshape([a.gid for a in env.cells], env.nR, env.nC)
 
 # ------------------------------------------------------------------------------
 # ## 4) Defining the main functions of the algorithm...
@@ -57,10 +57,14 @@ printableGrid(env) = reshape([a.gid for a in env.cells],env.nR,env.nC)
 Return the number of total neighbours if `gid` is `nothing` (skipping the empty cells) or of a specific `gid` if this one is provided.
 
 """
-function getNeighbours(x,y,env,gid=nothing)
-    board  = reshape(env.cells,env.nR,env.nC)
-    region = board[max(1,y-env.neighborhood):min(nR,y+env.neighborhood),max(1,x-env.neighborhood):min(nC,x+env.neighborhood)]
-    ## [...] Write your code here 
+function getNeighbours(x, y, env, gid=nothing)
+    board = reshape(env.cells, env.nR, env.nC)
+    region = board[max(1, y - env.neighborhood):min(nR, y + env.neighborhood), max(1, x - env.neighborhood):min(nC, x + env.neighborhood)]
+    if gid === nothing
+        return sum(getproperty.(region, :gid) .!= 0)
+    else
+        return sum(getproperty.(region, :gid) .== gid)
+    end
 end
 
 """
@@ -68,8 +72,10 @@ end
 
 Return whether the specific agent `a` is happy at his current location
 """
-function isHappy(x,y,a,env)
-   ## [...] Write your code here
+function isHappy(x, y, a, env)
+    sameTypeNeighbours = getNeighbours(x, y, env, a.gid)
+    total = getNeighbours(x, y, env)
+    return sameTypeNeighbours / total > env.similarityThreeshold
 end
 
 
@@ -81,10 +87,32 @@ It returns the share of agents that were happy before the move.
 """
 function reallocatePoints!(env)
     happyCount = 0
-    for (i,a) in enumerate(env.cells)
-       ## [...] Write your code here
+    for (i, a) in enumerate(env.cells)
+        groupId = a.gid
+        if groupId == 0
+            continue
+        end
+
+        (posX, posY) = iDToXY(i,env.nR,env.nC)
+
+        if isHappy(posX, posY, a, env)
+            happyCount += 1
+        else
+            candidateIds = shuffle(1:(env.nR * env.nC))
+            for candidate in candidateIds
+                if env.cells[candidate].gid != 0
+                    continue
+                end
+                (candX, candY) = iDToXY(candidate, env.nR, env.nC)
+                if isHappy(candX, candY, a, env)
+                    env.cells[candidate] = Agent(groupId)
+                    env.cells[i] = Agent(0)
+                    break
+                end
+            end
+        end
     end
-    return happyCount/sum(env.grsizes)
+    return happyCount / sum(env.grsizes)
 end
 
 """
@@ -94,62 +122,58 @@ Run the reallocation algorithm for the given steps printing a heatmap at each it
 Also, print at the end the chart of the happy agents by epoch
 """
 function run!(env)
-    outplot = heatmap(printableGrid(env), legend=nothing, title="START", color=mypal,aspect_ratio=env.nR/env.nC, size=(600,600*env.nR/env.nC))
+    outplot = heatmap(printableGrid(env), legend=nothing, title="START", color=mypal, aspect_ratio=env.nR / env.nC, size=(600, 600 * env.nR / env.nC))
     nHappyCount = Float64[]
-    display(outplot)
+    # savefig(outplot, "iteration_START.png")
     for i in 1:env.nSteps
         println("Running iteration $i...")
         nHappy = reallocatePoints!(env)
-        push!(nHappyCount,nHappy)
-        outplot = heatmap(printableGrid(env), legend=nothing, title="Iteration $i", color=mypal,aspect_ratio=env.nR/env.nC, size=(600,600*env.nR/env.nC))
+        push!(nHappyCount, nHappy)
+        outplot = heatmap(printableGrid(env), legend=nothing, title="Iteration $i", color=mypal, aspect_ratio=env.nR / env.nC, size=(600, 600 * env.nR / env.nC))
+        # savefig(outplot, "iteration_$i.png") 
         display(outplot)
     end
-    happyCountPlot = plot(nHappyCount,title="Share of happy agents by iteration")
+    happyCountPlot = plot(nHappyCount, title="Share of happy agents by iteration")
+    # savefig(happyCountPlot, "happy_agents.png")
     display(happyCountPlot)
 end
+
+
 
 # ------------------------------------------------------------------------------
 # ## 5) Setting the parameters of the specific simulation to run...
 
 # Parameters...
-nR         = 200
-nC         = 200
-nSteps     = 20
+nR = 200
+nC = 200
+nSteps = 20
 similarityThreeshold = 0.4         # Agent is happy if at least 40% similar
 neighborhood = 5                   # Defining how far looking for similar agents
-mypal        = [:white,:red,:blue] # First colour is for the empty cell
-gids         = [1,2]               # Gid 0 is reserved for empty cell
-grShares     = [0.4,0.4]           # Shares of cells occupied by agents, by type
+mypal = [:white, :red, :blue] # First colour is for the empty cell
+gids = [1, 2]               # Gid 0 is reserved for empty cell
+grShares = [0.4, 0.4]           # Shares of cells occupied by agents, by type
 
 
 # ------------------------------------------------------------------------------
 # ## 6) Initialising the simulation with the given parameters...
 
-nCells  = nR*nC
+nCells = nR * nC
 nGroups = length(gids)
 grsizes = Int.(ceil.(nCells .* grShares))
 
-cells  = fill(Agent(0),nCells)
+cells = fill(Agent(0), nCells)
 count = 1
 for g in 1:nGroups
+    global count
     [cells[j] = Agent(gids[g]) for j in count:count+grsizes[g]-1]
     count += grsizes[g]
-end 
+end
+
 
 shuffle!(cells)
-env = Env(nR,nC,similarityThreeshold,neighborhood,nSteps,cells,gids,grsizes)
-heatmap(printableGrid(env), legend=nothing, title="Iteration 0", color=mypal,aspect_ratio=env.nR/env.nC, size=(600,600*env.nR/env.nC))
+env = Env(nR, nC, similarityThreeshold, neighborhood, nSteps, cells, gids, grsizes)
+heatmap(printableGrid(env), legend=nothing, title="Iteration 0", color=mypal, aspect_ratio=env.nR / env.nC, size=(600, 600 * env.nR / env.nC))
 
 # ------------------------------------------------------------------------------
 # ## 7) Running the model...
 run!(env)
-
-# ------------------------------------------------------------------------------
-# ## 8) Optional variations...
-
-# You can try to implement variations of this model. Some ideas:
-
-# - implement multiple agent groups;
-# - run Monte-Carlo simulations with respect to the tolerance threshold, with it being a property of the agent rather than of the group, perhaps with the group having a certain distribution of it and each agent of that group sampling from it;
-# - implement two thresholds, with one to define happiness and one to define the actual decision to move (to consider costs associated with relocation);
-# - ....
